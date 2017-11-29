@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Configuration management in Drupal 8 vs Drupal 7</title>
+    <meta charset="utf-8">
+    <style>
+      /* Font */
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic);
+      body { font-family: 'Arial'; font-size: 120%; }
+      h1, h2, h3 { font-family: 'Source Sans Pro'; font-weight: bold; }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      a, a:hover, a:visited, a:active { color: #7f007f; text-decoration: none; }
+
+      /* Template pages */
+      .remark-slide-content { background-size: auto !important; background-repeat: repeat !important; font-size: 140% !important; line-height: 1.25; }
+      .remark-slide-content h1, .remark-slide-content h2, .remark-slide-content h3 { line-height: 1.2; }
+      .remark-slide-content.separator { background-size: cover !important; background-color: #7f007f; color: white; }
+      .remark-slide-content.separator a, .remark-slide-content.separator a:hover, .remark-slide-content.separator a:visited, .remark-slide-content.separator a:active { color: #ccc; }
+      .remark-slide-content.title-page .remark-slide-number, .remark-slide-content.separator .remark-slide-number { display: none; }
+      .remark-slide-content.title-page h1, .remark-slide-content.title-page h2, .remark-slide-content.title-page h3 { color: #7f007f; }
+
+      /* Footer */
+      .footer { position: absolute; bottom: 60px; }
+      .footer.left, .footer.left img { height: 1.5em; }
+      .footer.right { right: 5em; font-size: 18px; line-height: 1; }
+      .footer.right span.bwe { font-style: italic; }
+      .footer.right span.link { display: block; }
+      .footer.right span.link a { color: #666; font-style: italic; text-decoration: none; }
+
+      /* Layout */
+      .left-pane { float: left; width: 45%; margin-right: 5%; }
+      .right-pane { float: right; width: 45%; margin-left: 5%; }
+      .top-layer { z-index: 99; }
+
+      /* Colours */
+      .light-purple { color: #ba409c; }
+      .dark-purple { color: #7f007f; }
+
+      /* Other styles */
+      code { border-radius: 5px; font-size: 60% !important; }
+      .caption { font-size: 80% !important; font-style: italic; line-height: 1.2; }
+      .footnote { position: absolute; bottom: 110px; font-size: 80% !important; line-height: 1.2; }
+      .footnote::before { content: '* '; margin-left: -20px; float: left; }
+      .contain img { width: 100%; }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+name: separator
+layout: true
+class: center, middle, separator
+background-image: url(images/bg_purple_diamond.jpg)
+
+<img src="images/po-onion-icon.png" width="50"/>
+
+---
+
+name: normal-with-footer
+layout: true
+class: top, left, normal
+background-image: url(images/bright_squares.png)
+.footer.left[
+![](images/po_logo_horizontal.png)]
+.footer.right[
+Ingredients for .bwe.light-purple[better web experiences] .link[[www.pixelonion.com](http://www.pixelonion.com)]]
+
+---
+
+name: normal
+layout: true
+class: top, left, normal
+background-image: url(images/bright_squares.png)
+
+---
+
+class: left, middle, title-page
+
+# Configuration management in Drupal 8 vs Drupal 7
+
+_DrupalCamp Cebu 2017_<br/>
+_Thibaud (Tibo) Guilpain_
+
+.footer.left[
+![](images/po_logo_horizontal.png)]
+.footer.right[
+Ingredients for .bwe.light-purple[better web experiences] .link[[www.pixelonion.com](http://www.pixelonion.com)]]
+
+???
+In this session, we will look at configuration management, what it is, how it was done in Drupal 7 and how it is now done in Drupal 8.
+
+(French)
+For those wondering where the accent comes from...
+
+Pixel Onion is an Singapore based digital agency. We help medium and large organisations with digital strategy, user-centric design and web platform development. We try to empower our clients and make their life as easy as possible.
+-   Started with Drupal 7 in 2012 and now moving to Drupal 8
+
+---
+
+# What we are going to talk about
+
+1.  [What is configuration management?](#configmanagement)
+2.  [How was/is it done in Drupal 7?](#cmd7)
+3.  [What about Drupal 8?](#cmd8)
+4.  [Contribution modules for configuration management](#bonusmodules)
+
+
+???
+I would like to have a feel of the people attenting this session, can you raise
+your hand if:
+
+-   you are a site builder?
+-   you are a developer?
+-   dev with d8 experience?
+-   d7 experience?
+-   d8 experience?
+
+---
+
+name: configmanagement
+template: separator
+
+# What is configuration management?
+
+### In general, for a website and in Drupal
+
+---
+
+# Configuration management (or CM)
+
+_"a systems engineering process for establishing and maintaining consistency of a product's performance, functional, and physical attributes with its requirements, design, and operational information throughout its life."_
+
+~[Wikipedia](https://en.wikipedia.org/wiki/Configuration_management)
+
+???
+Thanks wiki, but hum what does that mean for us?
+---
+
+# CM for a website
+--
+
+What is a website?
+--
+
+-   Code or logic
+--
+
+-   Configuration of the code
+--
+
+- Content (articles, pictures, videos and ...)
+
+---
+
+# And in Drupal?
+--
+
+-  **Code**  
+--
+ -> Drupal core + contributed & custom modules + libraries + theme
+
+--
+-  **Configuration**
+--
+ -> Database
+
+--
+-  **Content**
+--
+ -> Database
+
+???
+Ok, so ?
+---
+
+# Where is the problem?
+
+**Configuration and content are in the database.**
+
+???
+Config and content in the db you said?
+
+Yes, and extracting the configuration from it is not easy.
+ single dev could work on his own and deliver the website to the client, but as soon as it is in production and you need to make changes or updates, you would be stuck. You cannot put the client's website on maintenance, work on your update, and push the new database with the changes into production and then reope the website.
+
+--
+
+Could we separate the tables in the database and just export the relevant configuration ones?
+
+*No, not easily.*
+---
+
+name: cmd7
+template: separator
+
+# How was/is it done in Drupal 7?
+
+---
+# The hardcore way
+
+All in custom modules' code:
+-  all configuration is created programmatically using install and update hooks
+    +  blocks
+    +  views
+    +  enable modules
+    +  set variables
+    +  ...
+<!-- TODO: Add more -->
+???
+Yes I had some hard core colleagues that really didn't like using contrib modules unless they did exactly what they wanted and nothing more.
+
+It is really good to understant how everything works, but really hard to get there. Also requires a lot of knowledge and most of the time reverse engineering.
+
+---
+# The Features module
+
+Can be used to export most of the configuration and has integration with most other modules.
+
+-> Self disciplne is required
+???
+Or it can become a real mess. No real standard here though, each developer has his/her own way of sorting it all out.
+---
+# Other modules?
+
+--
+-  **Features master**: allows you to export active modules, themes and permissions into a special master feature.
+--
+
+
+-  **Devinci**: Allows your code to be context aware and switch between environments and automatically change some configuration in the process.
+
+---
+# Conclusion on CM in Drupal 7
+
+-  Still quite complex
+--
+
+
+-  Lots of experience needed to use all these tools efficiently
+--
+
+
+-  Always a pain point in Drupal development
+
+---
+
+name: cmd8
+template: separator
+
+# What about Drupal 8?
+
+### CMI, the jewel of D8.
+---
+
+# The Configuration Management Initiative (CMI)
+
+???
+Since configuration management was so complicated in D7, and not part of the core, the community felt it needed an overall for Drupal 8, so here comes the CMI.
+--
+
+Basic principles:
+--
+
+-  Active configuration:
+--
+
+    - Comes from installed modules and changes in UI
+--
+    - Stored in the database
+--
+    - Can be read
+--
+(with overrides)
+???
+Think display of content
+--
+
+    - Can be read and edited (without overrides)
+???
+Think configuration forms
+---
+
+# The Configuration Management Initiative (CMI)
+
+Basic principles:
+-  Active configuration.
+
+--
+-  Exported configuration:
+--
+
+    - In YAML files
+--
+    - Exported via the UI: Manage > Configuration > Development > Configuration Synchronization (admin/config/development/configuration)
+--
+    - or via drush: drush cex & drush cim
+
+???
+drush config-export
+drush config-import
+
+---
+
+# The Configuration Management Initiative (CMI)
+
+Interactions between both set of configuration:
+
+--
+-  Export:
+
+    -  deletes all the configuration files
+    -  then re-creates all the files
+???
+Very simple and straightforward logic
+--
+
+-  Import:
+
+    - makes the difference between imported and active configuration
+    - modifies only what is relevant
+???
+Needed for conf delete.
+
+TODO :CHECK drush cim --partial !!!!!!!!!!!!!!!!!
+
+---
+
+# Deployment between environments
+
+???
+Both are copies of each other, like a production and a devlopment environment.
+--
+-  Export the active configuration to the YAML files
+--
+
+
+-  Add the files to Git and push to code repository.
+--
+
+
+-  Pull the files into destination environment
+--
+
+
+- Import the YAML files as the active configuration.
+???
+Warning: database has to be the same
+---
+
+# Team work, and how not to fail at it
+
+Workflow to follow for a safe process:
+--
+
+1.  Do your site building
+???
+Or you would have nothing to export...
+--
+
+2.  Export config: drush cex
+???
+Export your configuration into files so that they can be merged with your colleagues' work.
+--
+
+3.  Commit: git add & git commit
+???
+to have a safe haven to go back to.
+So these first three steps are to prepare you for the actual merging of your work with your teammates'
+--
+
+4.  Merge: git pull
+???
+Merge and solve eventual merge conflicts. Be careful of git here, as if your colleague deleted a config file and you needed it for something new you added, you might not notice. Example: your colleagues deletes a field. it deletes the basic conf of the field and the field instance, since only 1 content type was using it. At the same time, you added that field to another content type. So the associated conf is just a new file for the field's instance.
+So you merge, it deletes the field default config but keep your field instance file.
+-> the conf is broken. Best if you see it now, but other wise detected by one of the next steps.
+--
+
+5.  Update dependencies: composer install
+???
+Make sure your modules and all dependencies are up to date.
+--
+
+6.  Run updates: drush updb
+???
+Update the db to take your teammate's hook update and module updates into account
+--
+
+7.  Import config: drush cim
+???
+Reimport the config, to make sure it is not broken. D8 will tell you if the config is broken. Will alos tell you if a file is missing as per my example.
+--
+
+8.  Check all works fine
+???
+Test it all, see if all works as expected (automated tests would be a great help here....)
+--
+
+9.  Push: git push
+???
+Now you are finally good to push your code to the repo.
+---
+
+# Mistakes and consequences
+
+If you fail to follow the previous steps and:
+--
+
+-  Import before export **then** all your work is lost, no backup
+???
+you just overrode your work with your colleagues' after all
+--
+
+-  Merge before export **then** Export deletes your colleagues work, can be solved with git
+???
+
+--
+
+-  No updb or updb after config import **then** db might be broken
+???
+
+--
+
+-  No composer install **then** code may be outdated
+???
+
+--
+
+-  Merge before commit **then** conflicts need to be solved by hand, no safe state to return to
+???
+
+--
+
+-  Forgotten import **then** next export will be missing merged config. Hard to solve in git
+???
+
+---
+# Bonus workflow: module updates
+--
+
+-  Update code: composer update
+--
+
+-  Update db: drush updb
+--
+
+-  Export updated config: drush cex
+--
+
+-  Commit: git add & git commit
+--
+
+-  Then go through the safe team workflow from 2 slides back.
+---
+
+# Overriding configuration
+
+Use case: change existing configuration values in different environments
+*$conf* in Drupal 7 becomes *$config* in Drupal 8.
+--
+
+```
+// Get system site maintenance message text. This value may be overriden by
+// default from global $config (as well as translations, see below).
+$message = \Drupal::config('system.maintenance')->get('message');
+```
+--
+
+To override the value in settings.php, use:
+```
+$config['system.maintenance']['message'] = 'Sorry, our site is down now.';
+```
+???
+When using $config override outside of settings.php, use a preceding global $config;
+Note that values overridden via $config within settings.php will not be viewable from the Drupal administration interface
+
+-  But can only alter existing conf
+-  Can’t add new conf
+-  Cannot unset conf
+-  Cannot manage existing modules (installed or enabled)
+-  Cannot override some conf such as Bartik color and such
+
+---
+
+# Problems not solved by CMI
+
+--
+
+-  Sharing configuration with another site (instead of another environment)
+???
+CMI has a built in check that makes sure the uuid of the site is the same, if it is not, won't let you
+--
+
+
+-  Having different configuration per environment: devel ?
+???
+What if I want to have devel only on my dev env?
+What if I need some dev environment permissions or views?
+Cannot solve this with what I just showed you.
+
+---
+
+name: bonusmodules
+template: separator
+
+# Contrib modules for configuration management
+
+### Features, config split & more...
+
+---
+# Config read only
+
+**config_readonly**
+
+This module is to prevent users from altering the configuration at all. No edit permitted.
+--
+
+
+To enable readonly mode, enable this module and add this to your settings.php:
+
+```
+$settings['config_readonly'] = TRUE;
+```
+or
+```
+if (isset($_ENV['AH_SITE_ENVIRONMENT']) && $_ENV['AH_SITE_ENVIRONMENT'] === 'prod') {
+    $settings['config_readonly'] = TRUE;
+}
+```
+???
+To allow all changes via the command line and enable readonly mode for the UI only:
+
+if (PHP_SAPI !== 'cli') {
+  $settings['config_readonly'] = TRUE;
+}
+You could similarly toggle read-only mode based on the presence or absence of a file on the webserver (e.g. in a location outside the docroot).
+
+if (!file_exists('/home/myuser/disable-readonly.txt')) {
+  $settings['config_readonly'] = TRUE;
+}
+
+---
+# Configuration split
+
+**config_split**
+
+-  Define sets of configuration that will get exported to separate directories when exporting, and get merged together when importing. It is possible to define in settings.php which of these sets should be active and considered for the export and import.
+
+--
+
+-  Works based on config_filter
+???
+So, config filter adds a filter in CMI just before the files are written.
+
+Then can put plugins there. Basically hooks that are run on import/export
+Such as config split...
+
+---
+# Configuration split
+
+**config_split**
+
+Defines black list:
+-  Black listed configuration are banned from the default config export folder
+-  Config redirected to the split
+
+and grey list:
+-  Grey list configuration is not banned from default config
+-  Any changes from the default config already exported is redirected to the split
+-  On import the changes from the split override the default exported config
+
+???
+
+Blacklist: 
+- Configuration items that are explicitly managed by the split in question. These configuration items will be removed from the default directory. You can now store that configuration item in one or more configuration split, but not in the default directory.
+
+Greylist:
+- Configuration items on the grey list are not automatically removed from the default configuration directory. If a configuration item exists in the currently active split, it takes precedence over the copy stored in the default directory. If a copy of the greylisted configuration item does not exist in the currently active split, the configuration item from the default directory is used.
+
+For example, if you want to override site performance settings in your local split in order to disable css / js aggregation, the greylist would be a good option. This would allow you to store your performance settings for dev / test / prod in the default directory, while also storing an altered version for local development in your local split. You can also achieve this using the blacklist, but you would need to store a copy of the performance settings in each split. If performance settings are the same for dev / test / prod and only vary for the local split, this is duplicative
+
+---
+# Configuration split
+
+**config_split**
+
+When to use it?
+
+-> When you need to define configuration for different environments
+
+--
+
+How?
+
+-> Define configuration splits per environment, use environment variable to choose which split to enable on each environment.
+
+---
+# Configuration installer
+
+**config_installer**
+
+Installation profile taking over the the Drupal installer in order to set up the website based on exported configuration.
+
+--
+
+-> Let's you create new environments without relying on db export.
+
+---
+# Configuration installer
+
+**config_installer**
+
+Example workflow:
+
+-  First developer:
+    -  Initialise git repo
+    -  Install site locally
+    -  Exports config to sync
+    -  Commit and push to shared git repo
+-  Other dev (or envs):
+    -  Clone code
+    -  Have config_installer profile available
+    -  Install site starting from exported config
+
+---
+# Features
+
+**features**
+
+Allow you to add a set of configuration to a website. But not used as a replacement of CMI.
+
+
+However, it is difficult not to have it overlap with CMI. Does any of you use feature with Drupal 8?
+
+???
+As the module creator said, Features can now focus on doing what it was meant for. Sharing a common set of configuration to a new website so as to skip some recurring development. Photo gallery example.
+-  Enable the feature on the new website
+-  feature uninstall removes the config
+
+---
+template: separator
+
+# Questions?
+
+---
+template: separator
+
+# How to reach me
+
+Thibaud@pixelonion.com<br/>
+
+
+Made with [remark.js](http://remarkjs.com/)
+
+    </textarea>
+    <!--script src="https://gnab.github.io/remark/downloads/remark-latest.min.js"-->
+    <script src="js/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create({
+        // Set the slideshow display ratio
+        // Default: '4:3'
+        // Alternatives: '16:9', ...
+        // ratio: '16:9',
+        ratio: '4:3',
+
+        // Navigation options
+        navigation: {
+          // Enable or disable navigating using scroll
+          // Default: true
+          // Alternatives: false
+          scroll: false,
+
+          // Enable or disable navigation using touch
+          // Default: true
+          // Alternatives: false
+          touch: true,
+
+          // Enable or disable navigation using click
+          // Default: false
+          // Alternatives: true
+          click: false
+        },
+
+        // Customize slide number label, either using a format string..
+        // slideNumberFormat: 'Slide %current% of %total%',
+        slideNumberFormat: '%current%',
+        // .. or by using a format function
+        // slideNumberFormat: function (current, total) {
+        //   return 'Slide ' + current + ' of ' + total;
+        // },
+
+        // Enable or disable counting of incremental slides in the slide counting
+        countIncrementalSlides: false,
+
+        // Set default language for syntax highlighting
+        // Default: - (no highlighting)
+        // Alternatives: javascript, ruby, python, ... (see available language definitions for Highlight.js)
+        // To disable automatic highlighting, use no-highlight 
+        highlightLanguage: 'php',
+        
+        // Set highlight style for syntax highlighting
+        // Default: default
+        // Alternatives: arta, ascetic, dark, default, far, github, googlecode, idea, ir_black, 
+        // magula, monokai, rainbow, solarized-dark, solarized-light, sunburst, tomorrow, 
+        // tomorrow-night-blue, tomorrow-night-bright, tomorrow-night, tomorrow-night-eighties, vs, zenburn.
+        highlightStyle: 'tomorrow-night-bright',
+
+        // Highlight background of code lines prefixed with *
+        // Default: false
+        // Alternatives: true, false 
+        highlightLines: false,
+
+        // Highlight background of code spans defined by the content between backticks
+        // Default: false
+        // Alternatives: true, false
+        highlightSpans: false
+      }); 
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-77441341-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+  </body>
+</html>
